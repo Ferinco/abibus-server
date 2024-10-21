@@ -12,7 +12,7 @@ export const uploads = (file, folder) => {
       file,
       // {
       //   effect: 'overlay',
-      //   overlay: 'thebrick_sxyagd',
+      //   overlay: '',
       //   radius: 'max',
       //   width: 150,
       //   opacity: 100,
