@@ -8,6 +8,7 @@ const roomRoutes = require('./routes/rooms');
 const connectDb = require('./db/connect');
 const morgan = require('morgan');
 const config = require('./config');
+const cors = require('cors');
 
 const { MONGODB_URI } = require('./config');
 
@@ -17,6 +18,18 @@ const port = config.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(morgan('dev'));
+
+// Conditional CORS configuration
+if (process.env.NODE_ENV === 'development') {
+  app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
+} else {
+  app.use(cors()); // Use default CORS configuration in production
+}
+
 const apiVersion = 'v1';  // API version
 
 // Routes
