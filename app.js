@@ -5,11 +5,12 @@ const authRoutes = require('./routes/auth');
 const roomRoutes = require('./routes/rooms');
 const connectDb = require('./db/connect');
 const morgan = require('morgan');
+const config = require('./config');
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = config.PORT || 3000;
 
 // Middleware
 app.use(express.json());
@@ -27,10 +28,10 @@ app.get('/', (req, res) => {
 const start = async () => {
   try {
     if (process.env.NODE_ENV === "development") {
-      await connectDb(process.env.MONGODB_URI);
+      await connectDb(config.MONGODB_URI);
     }
     if (process.env.NODE_ENV === "test") {
-      const mongoUri = process.env.MONGODB_URI_TEST;
+      const mongoUri = config.MONGODB_URI_TEST;
       if (mongoUri) {
         await connectDb(mongoUri);
       } else {
@@ -38,7 +39,7 @@ const start = async () => {
       }
     }
     if(process.env.NODE_ENV === "production"){
-      await connectDb(process.env.MONGODB_URI);
+      await connectDb(config.MONGODB_URI);
     }
     app.listen(port, () => {
       console.log(`Server is running at http://localhost:${port}`);
