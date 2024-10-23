@@ -1,8 +1,6 @@
-
-
 module.exports = {
   PORT: process.env.PORT || 3000,
-  MONGODB_URI: process.env.DB_URI,
+  MONGODB_URI: process.env.MONGODB_URI,
   JWT_SECRET: process.env.JWT_SECRET || 'secret',
   CLOUD_NAME: process.env.CLOUD_NAME || 'your-cloud-name',
   CLOUD_API_KEY: process.env.CLOUD_API_KEY || 'your-cloud-api-key',

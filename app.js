@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
@@ -7,7 +9,7 @@ const connectDb = require('./db/connect');
 const morgan = require('morgan');
 const config = require('./config');
 
-dotenv.config();
+const { MONGODB_URI } = require('./config');
 
 const app = express();
 const port = config.PORT || 3000;
@@ -25,7 +27,15 @@ app.get('/', (req, res) => {
   res.send(`Welcome to Abibus Server ${apiVersion}!`);
 });
 
+mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch((err) => console.error('Error connecting to MongoDB:', err));
+
 const start = async () => {
+  console.log(config.MONGODB_URI);
   try {
     if (process.env.NODE_ENV === "development") {
       await connectDb(config.MONGODB_URI);
