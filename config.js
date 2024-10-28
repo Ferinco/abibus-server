@@ -11,4 +11,6 @@ module.exports = {
   EMAIL_FROM: process.env.EMAIL_FROM || "noreply@abibus.com",
   NODE_ENV: process.env.NODE_ENV || "development",
   MONGODB_URI_TEST: process.env.MONGODB_URI_TEST,
+  EMAIL_HOST: process.env.EMAIL_HOST || "smtp.zoho.com",
+  EMAIL_PORT: process.env.EMAIL_PORT || 465,
 };

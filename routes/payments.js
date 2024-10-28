@@ -2,11 +2,13 @@ const express = require("express");
 const router = express.Router();
 const Payment = require("../models/Payment");
 const auth = require("../middleware/auth");
+const generatePDF = require("../utils/pdfGenerator");
+const sendEmail = require("../utils/sendEmail");
 
 // Create a new payment
 router.post("/", async (req, res) => {
   try {
-    const { roomId, email } = req.body;
+    const { roomId, email, amount } = req.body;
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
     }
@@ -17,6 +19,32 @@ router.post("/", async (req, res) => {
       ...req.body,
     });
     await payment.save();
+
+    // Generate invoice PDF
+    const invoiceData = {
+      invoiceNumber: payment._id,
+      createdAt: payment.createdAt.toLocaleDateString(),
+      email: payment.email,
+      roomId: payment.roomId,
+      amount: payment.amount,
+    };
+    const pdfBuffer = await generatePDF("invoice", invoiceData);
+
+    // Send email with PDF attachment
+    const emailOptions = {
+      to: payment.email,
+      subject: "Payment Invoice",
+      text: "Thank you for your payment. Please find the invoice attached.",
+      attachments: [
+        {
+          filename: `invoice_${payment._id}.pdf`,
+          content: pdfBuffer,
+        },
+      ],
+    };
+    console.log(emailOptions);
+    await sendEmail(emailOptions);
+
     res.status(201).json(payment);
   } catch (error) {
     res.status(400).json({ message: error.message });

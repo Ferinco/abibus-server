@@ -7,6 +7,9 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
   resetPasswordToken: String,
   resetPasswordExpires: Date,
+  phone_number: String,
+  username: String,
+  
 });
 
 userSchema.pre('save', async function (next) {
