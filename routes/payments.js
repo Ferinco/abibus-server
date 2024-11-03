@@ -257,20 +257,20 @@ router.get("/check-availability/:roomId", async (req, res) => {
 // Add new route to get room booking schedule
 router.get("/room-schedule/:roomId", async (req, res) => {
   try {
-    const { months = 3 } = req.query; // Default to next 3 months
+    const { months = 3 } = req.query;
     const room = await Room.findById(req.params.roomId);
 
     if (!room) {
       return res.status(404).json({ message: "Room not found" });
     }
 
-    // Get start of today and end date (default 3 months from now)
+    // Get start of today and end date
     const startDate = new Date();
     startDate.setHours(0, 0, 0, 0);
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + parseInt(months));
 
-    // Get all bookings for the room
+    // Get all current and future bookings for the room
     const bookings = await Payment.find({
       roomId: req.params.roomId,
       status: "completed",
@@ -280,34 +280,43 @@ router.get("/room-schedule/:roomId", async (req, res) => {
       .select("bookingStart bookingEnd email -_id")
       .sort({ bookingStart: 1 });
 
-    // Create schedule object with booked and available dates
     const schedule = {
       roomId: req.params.roomId,
       currentBookings: bookings,
-      nextAvailableDate: startDate,
+      nextAvailableDate: null,
       availabilityRanges: [],
     };
 
     // Calculate available date ranges
-    let lastEndDate = startDate;
+    let lastEndDate = new Date(Math.max(startDate, new Date()));
+
     for (const booking of bookings) {
-      // If there's a gap between last end date and next booking start
+      // Only create an availability range if there's a meaningful gap
       if (booking.bookingStart > lastEndDate) {
         schedule.availabilityRanges.push({
-          start: lastEndDate,
-          end: booking.bookingStart,
+          start: new Date(lastEndDate),
+          end: new Date(booking.bookingStart),
         });
       }
-      lastEndDate = booking.bookingEnd;
+      lastEndDate = new Date(booking.bookingEnd);
     }
 
     // Add final range if there's space after last booking
     if (lastEndDate < endDate) {
       schedule.availabilityRanges.push({
-        start: lastEndDate,
-        end: endDate,
+        start: new Date(lastEndDate),
+        end: new Date(endDate),
       });
     }
+
+    // Filter out any ranges that are too short (optional, adjust minimum hours as needed)
+    const minimumHours = 1;
+    schedule.availabilityRanges = schedule.availabilityRanges.filter(
+      (range) => {
+        const hours = (range.end - range.start) / (1000 * 60 * 60);
+        return hours >= minimumHours;
+      }
+    );
 
     // Set next available date
     if (schedule.availabilityRanges.length > 0) {
@@ -321,6 +330,19 @@ router.get("/room-schedule/:roomId", async (req, res) => {
       isAvailableNow: schedule.availabilityRanges.some(
         (range) => range.start <= new Date() && range.end > new Date()
       ),
+      nextAvailableDate: schedule.nextAvailableDate,
+      currentStatus: {
+        isOccupied: bookings.some(
+          (booking) =>
+            booking.bookingStart <= new Date() &&
+            booking.bookingEnd >= new Date()
+        ),
+        currentBooking: bookings.find(
+          (booking) =>
+            booking.bookingStart <= new Date() &&
+            booking.bookingEnd >= new Date()
+        ),
+      },
     };
 
     res.json(schedule);
