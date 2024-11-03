@@ -1,15 +1,15 @@
-const { format, formatDistanceToNow } = require('date-fns');
+const { format, formatDistanceToNow } = require("date-fns");
 
 const fDate = (date) => {
-  return format(new Date(date), 'dd MMMM yyyy');
+  return format(new Date(date), "dd MMMM yyyy");
 };
 
 const fDateTime = (date) => {
-  return format(new Date(date), 'dd MMM yyyy HH:mm');
+  return format(new Date(date), "dd MMM yyyy HH:mm");
 };
 
 const fDateTimeSuffix = (date) => {
-  return format(new Date(date), 'dd/MM/yyyy hh:mm p');
+  return format(new Date(date), "dd/MM/yyyy hh:mm p");
 };
 
 const fToNow = (date) => {
@@ -18,4 +18,4 @@ const fToNow = (date) => {
   });
 };
 
-module.exports = { fDate, fToNow, fDateTimeSuffix, fDateTimeSuffix };
+module.exports = { fDate, fToNow, fDateTimeSuffix, fDateTimeSuffix, fDateTime };

@@ -5,6 +5,8 @@ const auth = require("../middleware/auth");
 const generatePDF = require("../utils/pdfGenerator");
 const sendEmail = require("../utils/sendEmail");
 const Room = require("../models/Room");
+const { fCurrency } = require("../utils/formatNumber");
+const { fDateTime, fDate } = require("../utils/formatTime");
 
 // Create a new payment
 router.post("/", async (req, res) => {
@@ -52,10 +54,22 @@ router.post("/", async (req, res) => {
     // Generate invoice PDF
     const invoiceData = {
       invoiceNumber: payment._id,
-      createdAt: payment.createdAt.toLocaleDateString(),
+      createdAt: fDateTime(payment.createdAt),
       email: payment.email,
       roomId: payment.roomId,
       amount: payment.amount,
+      customer_name: payment.firstName + " " + payment.lastName,
+      customer_email: payment.email,
+      transaction_id: payment.id,
+      payment_date: fDateTime(payment.createdAt),
+      total_amount: fCurrency(payment.amount),
+      startDate: fDate(payment.bookingStart),
+      endDate: fDate(payment.bookingEnd),
+      amount_per_night: fCurrency(
+        payment.amount /
+          ((payment.bookingEnd - payment.bookingStart) / (1000 * 60 * 60 * 24))
+      ),
+      room_name: room.name,
     };
     const pdfBuffer = await generatePDF("invoice", invoiceData);
 
