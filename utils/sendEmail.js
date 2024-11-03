@@ -14,7 +14,7 @@ const sendEmail = async (options) => {
 
   // Define email options
   const mailOptions = {
-    from: config.EMAIL_FROM,
+    from: config.EMAIL_USER,
     to: options.to,
     subject: options.subject,
     text: options.text,

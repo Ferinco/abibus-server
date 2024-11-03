@@ -1,94 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title>Invoice</title>
-    <style>
-        .invoice-box {
-            max-width: 800px;
-            margin: auto;
-            padding: 30px;
-            border: 1px solid #eee;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-            font-size: 16px;
-            line-height: 24px;
-            font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
-            color: #555;
-        }
-        .invoice-box table {
-            width: 100%;
-            line-height: inherit;
-            text-align: left;
-        }
-        .invoice-box table td {
-            padding: 5px;
-            vertical-align: top;
-        }
-        .invoice-box table tr td:nth-child(2) {
-            text-align: right;
-        }
-        .invoice-box table tr.top table td {
-            padding-bottom: 20px;
-        }
-        .invoice-box table tr.information table td {
-            padding-bottom: 40px;
-        }
-        .invoice-box table tr.heading td {
-            background: #eee;
-            border-bottom: 1px solid #ddd;
-            font-weight: bold;
-        }
-        .invoice-box table tr.details td {
-            padding-bottom: 20px;
-        }
-        .invoice-box table tr.item td {
-            border-bottom: 1px solid #eee;
-        }
-        .invoice-box table tr.total td:nth-child(2) {
-            border-top: 2px solid #eee;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Receipt</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+      padding: 20px;
+    }
+    .receipt-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      text-align: center;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      font-size: 24px;
+      margin: 0;
+    }
+    .header p {
+      font-size: 14px;
+      color: #666;
+    }
+    .content {
+      margin-bottom: 20px;
+    }
+    .content h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .details-table, .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    .details-table th, .summary-table th, .summary-table td {
+      padding: 10px;
+      text-align: left;
+    }
+    .details-table th, .summary-table th {
+      background-color: #f5f5f5;
+    }
+    .summary-table {
+      border-top: 1px solid #e0e0e0;
+    }
+    .summary-table td:last-child {
+      text-align: right;
+    }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #999;
+    }
+  </style>
 </head>
 <body>
-    <div class="invoice-box">
-        <table cellpadding="0" cellspacing="0">
-            <tr class="top">
-                <td colspan="2">
-                    <table>
-                        <tr>
-                            <td>
-                                Invoice #: {{invoiceNumber}}<br />
-                                Created: {{createdAt}}<br />
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr class="information">
-                <td colspan="2">
-                    <table>
-                        <tr>
-                            <td>
-                                Customer Email: {{email}}
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr class="heading">
-                <td>Item</td>
-                <td>Price</td>
-            </tr>
-            <tr class="item">
-                <td>Room Booking (ID: {{roomId}})</td>
-                <td>${{amount}}</td>
-            </tr>
-            <tr class="total">
-                <td></td>
-                <td>Total: ${{amount}}</td>
-            </tr>
-        </table>
+  <div class="receipt-container">
+    <!-- Header Section -->
+    <div class="header">
+      <h1>Payment Receipt</h1>
+      <p>Thank you for your payment!</p>
     </div>
+    
+    <!-- Customer Information Section -->
+    <div class="content">
+      <h2>Customer Information</h2>
+      <table class="details-table">
+        <tr>
+          <th>Name</th>
+          <td>{{ customer_name }}</td>
+        </tr>
+        <tr>
+          <th>Email</th>
+          <td>{{ customer_email }}</td>
+        </tr>
+        <tr>
+          <th>Date</th>
+          <td>{{ payment_date }}</td>
+        </tr>
+        <tr>
+          <th>Transaction ID</th>
+          <td>{{ transaction_id }}</td>
+        </tr>
+      </table>
+    </div>
+    
+    <!-- Payment Summary Section -->
+    <div class="content">
+      <h2>Payment Summary</h2>
+      <table class="summary-table">
+        <tr>
+          <th>Room</th>
+          <td>{{ room_name }}</td>
+        </tr>
+        <tr>
+          <th>Amount per Night</th>
+          <td>${{ amount_per_night }}</td>
+        </tr>
+        <tr>
+          <th>Total Amount</th>
+          <td>${{ total_amount }}</td>
+        </tr>
+      </table>
+    </div>
+    
+    <!-- Validity Period Section -->
+    <div class="content">
+      <p><strong>Receipt Valid:</strong> {{ startDate }} to {{ endDate }}</p>
+    </div>
+    
+    <!-- Footer Section -->
+    <div class="footer">
+      <p>If you have any questions about this receipt, please contact our support team.</p>
+      <p>Thank you for choosing Abibus Hotel and Suites!</p>
+    </div>
+  </div>
 </body>
 </html>

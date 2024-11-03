@@ -43,6 +43,35 @@ const paymentSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  bookingStart: {
+    type: Date,
+    required: true,
+  },
+  bookingEnd: {
+    type: Date,
+    required: true,
+  },
+});
+
+// Add a pre-save middleware to check for booking conflicts
+paymentSchema.pre("save", async function (next) {
+  if (this.isModified("status") && this.status === "completed") {
+    const existingBookings = await this.constructor.find({
+      roomId: this.roomId,
+      status: "completed",
+      $or: [
+        {
+          bookingStart: { $lte: this.bookingEnd },
+          bookingEnd: { $gte: this.bookingStart },
+        },
+      ],
+    });
+
+    if (existingBookings.length > 0) {
+      throw new Error("Room is already booked for these dates");
+    }
+  }
+  next();
 });
 
 module.exports = mongoose.model("Payment", paymentSchema);

@@ -4,20 +4,49 @@ const Payment = require("../models/Payment");
 const auth = require("../middleware/auth");
 const generatePDF = require("../utils/pdfGenerator");
 const sendEmail = require("../utils/sendEmail");
+const Room = require("../models/Room");
 
 // Create a new payment
 router.post("/", async (req, res) => {
   try {
-    const { roomId, email, amount } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+    const { roomId, email, amount, bookingStart, bookingEnd } = req.body;
+
+    // Validate required fields
+    if (!email || !roomId || !bookingStart || !bookingEnd) {
+      return res.status(400).json({
+        message: "Email, Room ID, booking start date and end date are required",
+      });
     }
-    if (!roomId) {
-      return res.status(400).json({ message: "Room ID is required" });
+
+    // Check if dates are valid
+    const startDate = new Date(bookingStart);
+    const endDate = new Date(bookingEnd);
+
+    if (startDate >= endDate) {
+      return res.status(400).json({
+        message: "Booking end date must be after start date",
+      });
     }
+
+    // Check room availability
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" });
+    }
+
+    const isAvailable = await room.checkAvailability(startDate, endDate);
+    if (!isAvailable) {
+      return res.status(400).json({
+        message: "Room is not available for the selected dates",
+      });
+    }
+
     const payment = new Payment({
       ...req.body,
+      bookingStart: startDate,
+      bookingEnd: endDate,
     });
+
     await payment.save();
 
     // Generate invoice PDF
@@ -184,6 +213,117 @@ router.delete("/:id", async (req, res) => {
       return res.status(404).json({ message: "Payment not found" });
     }
     res.json({ message: "Payment deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Add a new route to check room availability
+router.get("/check-availability/:roomId", async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        message: "Start date and end date are required",
+      });
+    }
+
+    const room = await Room.findById(req.params.roomId);
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" });
+    }
+
+    const isAvailable = await room.checkAvailability(
+      new Date(startDate),
+      new Date(endDate)
+    );
+
+    // Get all bookings for the room to show schedule
+    const bookings = await Payment.find({
+      roomId: req.params.roomId,
+      status: "completed",
+      bookingEnd: { $gte: new Date() },
+    }).select("bookingStart bookingEnd");
+
+    res.json({
+      isAvailable,
+      bookings,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Add new route to get room booking schedule
+router.get("/room-schedule/:roomId", async (req, res) => {
+  try {
+    const { months = 3 } = req.query; // Default to next 3 months
+    const room = await Room.findById(req.params.roomId);
+
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" });
+    }
+
+    // Get start of today and end date (default 3 months from now)
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + parseInt(months));
+
+    // Get all bookings for the room
+    const bookings = await Payment.find({
+      roomId: req.params.roomId,
+      status: "completed",
+      bookingEnd: { $gte: startDate },
+      bookingStart: { $lte: endDate },
+    })
+      .select("bookingStart bookingEnd email -_id")
+      .sort({ bookingStart: 1 });
+
+    // Create schedule object with booked and available dates
+    const schedule = {
+      roomId: req.params.roomId,
+      currentBookings: bookings,
+      nextAvailableDate: startDate,
+      availabilityRanges: [],
+    };
+
+    // Calculate available date ranges
+    let lastEndDate = startDate;
+    for (const booking of bookings) {
+      // If there's a gap between last end date and next booking start
+      if (booking.bookingStart > lastEndDate) {
+        schedule.availabilityRanges.push({
+          start: lastEndDate,
+          end: booking.bookingStart,
+        });
+      }
+      lastEndDate = booking.bookingEnd;
+    }
+
+    // Add final range if there's space after last booking
+    if (lastEndDate < endDate) {
+      schedule.availabilityRanges.push({
+        start: lastEndDate,
+        end: endDate,
+      });
+    }
+
+    // Set next available date
+    if (schedule.availabilityRanges.length > 0) {
+      schedule.nextAvailableDate = schedule.availabilityRanges[0].start;
+    }
+
+    // Add summary statistics
+    schedule.summary = {
+      totalBookings: bookings.length,
+      availableRanges: schedule.availabilityRanges.length,
+      isAvailableNow: schedule.availabilityRanges.some(
+        (range) => range.start <= new Date() && range.end > new Date()
+      ),
+    };
+
+    res.json(schedule);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
