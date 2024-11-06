@@ -2,11 +2,12 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const sendEmail = require("../utils/sendEmail");
 
 // Register a new user
 router.post("/register", async (req, res, next) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password, role, username, firstName, lastName } = req.body;
 
     console.log("Registration attempt for:", email);
 
@@ -20,12 +21,28 @@ router.post("/register", async (req, res, next) => {
     }
 
     // Create new user
-    user = new User({ email, password, role });
+    user = new User({ email, password, role, username, firstName, lastName });
 
     // Save user (password will be hashed by the pre-save hook)
     await user.save();
-    console.log("User saved successfully:", user);
+    // Send welcome email
+    await sendEmail({
+      to: user.email,
+      subject: "Welcome to Abibus Hotel and Suites",
+      text: `
+Dear ${user.firstName || user.username},
 
+Welcome to Abibus Hotel and Suites! We're delighted to have you as our guest.
+
+At Abibus, we pride ourselves on providing exceptional hospitality and memorable experiences for all our guests.
+
+If you have any questions or need assistance, please don't hesitate to contact our customer service team.
+
+Thank you for choosing Abibus Hotel and Suites.
+Best regards,
+The Abibus Hotel Team
+    `,
+    });
     // Create and return JWT token
     const payload = {
       user: {
