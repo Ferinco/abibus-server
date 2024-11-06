@@ -7,7 +7,8 @@ const sendEmail = require("../utils/sendEmail");
 // Register a new user
 router.post("/register", async (req, res, next) => {
   try {
-    const { email, password, role, username, firstName, lastName } = req.body;
+    const { email, password, role, username, firstName, lastName, phone } =
+      req.body;
 
     console.log("Registration attempt for:", email);
 
@@ -21,7 +22,15 @@ router.post("/register", async (req, res, next) => {
     }
 
     // Create new user
-    user = new User({ email, password, role, username, firstName, lastName });
+    user = new User({
+      email,
+      password,
+      role,
+      username,
+      firstName,
+      lastName,
+      phone,
+    });
 
     // Save user (password will be hashed by the pre-save hook)
     await user.save();
