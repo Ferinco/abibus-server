@@ -51,6 +51,10 @@ const paymentSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  room: {
+    type: String,
+    required: true,
+  },
 });
 
 // Add a pre-save middleware to check for booking conflicts

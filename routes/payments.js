@@ -365,4 +365,15 @@ router.get("/room-schedule/:roomId", async (req, res) => {
   }
 });
 
+router.get("/room-bookings/:roomId", async (req, res) => {
+  try {
+    const bookings = await Payment.find({ roomId: req.params.roomId }).select(
+      "bookingStart bookingEnd"
+    );
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

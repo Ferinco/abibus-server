@@ -90,11 +90,8 @@ router.post("/login", async (req, res, next) => {
       throw error;
     }
 
-    console.log("User found:", user.email);
-
     // Check password using the method defined in the User model
     const isMatch = await user.comparePassword(password);
-    console.log("Password match:", isMatch);
 
     if (!isMatch) {
       const error = new Error("Incorrect password");
