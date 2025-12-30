@@ -9,11 +9,11 @@ const {
 const auth = require("../middleware/auth");
 
 // Image routes
-router.get("/images", auth, getImages);
+router.get("/images", getImages);
 router.post("/images", auth, addImage);
 
 // Settings routes
-router.get("/settings", auth, getSettings);
+router.get("/settings", getSettings);
 router.post("/settings", auth, updateSetting);
 
 module.exports = router;
