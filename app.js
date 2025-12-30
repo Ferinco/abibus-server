@@ -12,18 +12,16 @@ const config = require("./config");
 const cors = require("cors");
 const errorHandler = require("./middleware/errorHandler");
 const paymentRoutes = require("./routes/payments");
-const imageRoutes = require("./routes/imageRoutes");
+const mediaRoutes = require("./routes/mediaRoutes");
 
 const { MONGODB_URI } = require("./config");
 
 const app = express();
 const port = config.PORT || 3000;
 
-// Middleware
 app.use(express.json());
 app.use(morgan("dev"));
 
-// Conditional CORS configuration
 if (process.env.NODE_ENV === "development") {
   app.use(
     cors({
@@ -43,7 +41,7 @@ app.use(`/api/${apiVersion}/auth`, authRoutes);
 app.use(`/api/${apiVersion}/rooms`, roomRoutes);
 app.use(`/api/${apiVersion}/users`, userRoutes);
 app.use(`/api/${apiVersion}/payments`, paymentRoutes);
-app.use(`/api/${apiVersion}/images`, imageRoutes);
+app.use(`/api/${apiVersion}`, mediaRoutes);
 
 app.get("/", (req, res) => {
   res.send(`Welcome to Abibus Server ${apiVersion}!`);
