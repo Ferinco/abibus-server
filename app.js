@@ -13,6 +13,7 @@ const cors = require("cors");
 const errorHandler = require("./middleware/errorHandler");
 const paymentRoutes = require("./routes/payments");
 const mediaRoutes = require("./routes/mediaRoutes");
+const serviceRoutes = require("./routes/serviceRoutes");
 
 const { MONGODB_URI } = require("./config");
 
@@ -42,6 +43,7 @@ app.use(`/api/${apiVersion}/rooms`, roomRoutes);
 app.use(`/api/${apiVersion}/users`, userRoutes);
 app.use(`/api/${apiVersion}/payments`, paymentRoutes);
 app.use(`/api/${apiVersion}`, mediaRoutes);
+app.use(`/api/${apiVersion}/services`, serviceRoutes);
 
 app.get("/", (req, res) => {
   res.send(`Welcome to Abibus Server ${apiVersion}!`);
